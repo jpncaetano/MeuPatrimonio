@@ -1,5 +1,6 @@
 package br.com.api.cadastrousuario.service;
 
+import br.com.api.cadastrousuario.dto.UsuarioAtualizadoDTO;
 import br.com.api.cadastrousuario.exception.CpfInvalidoException;
 import br.com.api.cadastrousuario.exception.DataNascimentoInvalidaException;
 import br.com.api.cadastrousuario.exception.UsuarioJaCadastradoException;
@@ -47,7 +48,6 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-
     // Buscar todos os usuários
     public List<Usuario> findAll() {
         return usuarioRepository.findAll();
@@ -58,7 +58,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
-    // Method reutilizável para buscar usuário por Id
+    // Méthodo reutilizável para buscar usuário por Id
     public Usuario buscarUsuarioPorId(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário com ID " + id + " não encontrado!"));
@@ -71,27 +71,21 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    // Alterar CPF
-    public Usuario alterarCpf(Long id, String novoCpf) {
-        Usuario usuario = buscarUsuarioPorId(id);
-        String cpfLimpo = novoCpf.replaceAll("[^0-9]", "");
-
-        if (!CPFUtil.isValidCPF(cpfLimpo)) {
-            throw new CpfInvalidoException("CPF inválido!");
-        }
-
-        if (usuarioRepository.existsByCpf(cpfLimpo) && !usuario.getCpf().equals(cpfLimpo)) {
-            throw new CpfInvalidoException("CPF já cadastrado!");
-        }
-
-        usuario.setCpf(cpfLimpo);
-        return usuarioRepository.save(usuario);
-    }
-
     // Alterar Data de Nascimento
     public Usuario alterarDataNascimento(Long id, LocalDate novaDataNascimento) {
         Usuario usuario = buscarUsuarioPorId(id);
         usuario.setDataNascimento(novaDataNascimento);
+        return usuarioRepository.save(usuario);
+    }
+
+    // Alterar todos os Dados do Cadastro
+    public Usuario alterarTodosOsDados(Long id, UsuarioAtualizadoDTO dto) {
+        Usuario usuario = buscarUsuarioPorId(id);
+
+        // Atualiza os dados
+        usuario.setNome(dto.getNome());
+        usuario.setDataNascimento(dto.getDataNascimento());
+
         return usuarioRepository.save(usuario);
     }
 
