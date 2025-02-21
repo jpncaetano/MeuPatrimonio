@@ -1,6 +1,5 @@
 package br.com.api.cadastrousuario.controller;
 
-import br.com.api.cadastrousuario.dto.UsuarioAtualizadoDTO;
 import br.com.api.cadastrousuario.model.Usuario;
 import br.com.api.cadastrousuario.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -75,9 +74,9 @@ public class UsuarioController {
     }
 
     // PUT - Alterar todos os Dados do Cadastro
-    @PutMapping("/{id}")
-    public ResponseEntity<Usuario> alterarTodosOsDados(@PathVariable Long id, @RequestBody @Valid UsuarioAtualizadoDTO dto) {
-        Usuario usuarioAtualizado = usuarioService.alterarTodosOsDados(id, dto);
+    @PutMapping("/{id}/cadastro")
+    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody Usuario usuarioRecebido) {
+        Usuario usuarioAtualizado = usuarioService.alterarTodosOsDados(id, usuarioRecebido);
         return ResponseEntity.ok(usuarioAtualizado);
     }
 

@@ -1,6 +1,5 @@
 package br.com.api.cadastrousuario.service;
 
-import br.com.api.cadastrousuario.dto.UsuarioAtualizadoDTO;
 import br.com.api.cadastrousuario.exception.UsuarioNaoEncontradoException;
 import br.com.api.cadastrousuario.model.Usuario;
 import br.com.api.cadastrousuario.repository.UsuarioRepository;
@@ -73,17 +72,25 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    // Alterar todos os Dados do Cadastro
-    public Usuario alterarTodosOsDados(Long id, UsuarioAtualizadoDTO dto) {
+    public Usuario alterarTodosOsDados(Long id, Usuario usuarioRecebido) {
+        // Busca o usuário no banco pelo ID da URL
         Usuario usuario = buscarUsuarioPorId(id);
 
-        ValidaUsuarioUtil.validarNome(dto.getNome());
-        ValidaUsuarioUtil.validarDataNascimento(dto.getDataNascimento());
-        ValidaUsuarioUtil.validarCpf(dto.getCpf(), id, usuarioRepository);
+        // Se o JSON enviar um ID diferente, ele será ignorado.
+        if (usuarioRecebido.getNome() != null) {
+            ValidaUsuarioUtil.validarNome(usuarioRecebido.getNome());
+            usuario.setNome(usuarioRecebido.getNome());
+        }
 
-        usuario.setNome(dto.getNome());
-        usuario.setCpf(dto.getCpf().replaceAll("[^0-9]", ""));
-        usuario.setDataNascimento(dto.getDataNascimento());
+        if (usuarioRecebido.getCpf() != null) {
+            ValidaUsuarioUtil.validarCpf(usuarioRecebido.getCpf(), id, usuarioRepository);
+            usuario.setCpf(usuarioRecebido.getCpf().replaceAll("[^0-9]", ""));
+        }
+
+        if (usuarioRecebido.getDataNascimento() != null) {
+            ValidaUsuarioUtil.validarDataNascimento(usuarioRecebido.getDataNascimento());
+            usuario.setDataNascimento(usuarioRecebido.getDataNascimento());
+        }
 
         return usuarioRepository.save(usuario);
     }
