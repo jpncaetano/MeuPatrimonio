@@ -14,6 +14,9 @@ public class UsuarioAtualizadoDTO {
     @NotBlank(message = "O nome não pode ser vazio.")
     private String nome;
 
+    @NotBlank(message = "O CPF não pode ser vazio.")
+    private String cpf;
+
     @NotNull(message = "A data de nascimento não pode ser vazia.")
     private LocalDate dataNascimento;
 }

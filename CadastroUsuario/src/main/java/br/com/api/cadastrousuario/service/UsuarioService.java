@@ -1,13 +1,10 @@
 package br.com.api.cadastrousuario.service;
 
 import br.com.api.cadastrousuario.dto.UsuarioAtualizadoDTO;
-import br.com.api.cadastrousuario.exception.CpfInvalidoException;
-import br.com.api.cadastrousuario.exception.DataNascimentoInvalidaException;
-import br.com.api.cadastrousuario.exception.UsuarioJaCadastradoException;
 import br.com.api.cadastrousuario.exception.UsuarioNaoEncontradoException;
 import br.com.api.cadastrousuario.model.Usuario;
 import br.com.api.cadastrousuario.repository.UsuarioRepository;
-import br.com.api.cadastrousuario.util.CPFUtil;
+import br.com.api.cadastrousuario.util.ValidaUsuarioUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,26 +22,11 @@ public class UsuarioService {
 
     // Criar novo usuário
     public Usuario criaNovoUsuario(Usuario usuario) {
-        // Remove caracteres especiais do CPF
-        String cpfLimpo = usuario.getCpf().replaceAll("[^0-9]", "");
+        ValidaUsuarioUtil.validarNome(usuario.getNome());
+        ValidaUsuarioUtil.validarDataNascimento(usuario.getDataNascimento());
+        ValidaUsuarioUtil.validarCpf(usuario.getCpf(), null, usuarioRepository);
 
-        // Valida CPF
-        if (!CPFUtil.isValidCPF(cpfLimpo)) {
-            throw new CpfInvalidoException("CPF inválido!");
-        }
-
-        // Verifica se já existe um usuário com esse CPF no banco
-        if (usuarioRepository.existsByCpf(cpfLimpo)) {
-            throw new UsuarioJaCadastradoException("Já existe um usuário com esse CPF.");
-        }
-
-        // Valida a data de nascimento (não pode ser futura)
-        if (usuario.getDataNascimento().isAfter(LocalDate.now())) {
-            throw new DataNascimentoInvalidaException("A data de nascimento não pode ser no futuro.");
-        }
-
-        // Salva o CPF formatado corretamente
-        usuario.setCpf(cpfLimpo);
+        usuario.setCpf(usuario.getCpf().replaceAll("[^0-9]", ""));
         return usuarioRepository.save(usuario);
     }
 
@@ -58,7 +40,7 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
-    // Méthodo reutilizável para buscar usuário por Id
+    // Méthodo reutilizável para buscar usuário por ID
     public Usuario buscarUsuarioPorId(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsuarioNaoEncontradoException("Usuário com ID " + id + " não encontrado!"));
@@ -66,13 +48,26 @@ public class UsuarioService {
 
     // Alterar Nome
     public Usuario alterarNome(Long id, String novoNome) {
+        ValidaUsuarioUtil.validarNome(novoNome);
+
         Usuario usuario = buscarUsuarioPorId(id);
         usuario.setNome(novoNome);
         return usuarioRepository.save(usuario);
     }
 
+    // Alterar CPF
+    public Usuario alterarCpf(Long id, String novoCpf) {
+        Usuario usuario = buscarUsuarioPorId(id);
+        ValidaUsuarioUtil.validarCpf(novoCpf, id, usuarioRepository);
+
+        usuario.setCpf(novoCpf.replaceAll("[^0-9]", ""));
+        return usuarioRepository.save(usuario);
+    }
+
     // Alterar Data de Nascimento
     public Usuario alterarDataNascimento(Long id, LocalDate novaDataNascimento) {
+        ValidaUsuarioUtil.validarDataNascimento(novaDataNascimento);
+
         Usuario usuario = buscarUsuarioPorId(id);
         usuario.setDataNascimento(novaDataNascimento);
         return usuarioRepository.save(usuario);
@@ -82,17 +77,20 @@ public class UsuarioService {
     public Usuario alterarTodosOsDados(Long id, UsuarioAtualizadoDTO dto) {
         Usuario usuario = buscarUsuarioPorId(id);
 
-        // Atualiza os dados
+        ValidaUsuarioUtil.validarNome(dto.getNome());
+        ValidaUsuarioUtil.validarDataNascimento(dto.getDataNascimento());
+        ValidaUsuarioUtil.validarCpf(dto.getCpf(), id, usuarioRepository);
+
         usuario.setNome(dto.getNome());
+        usuario.setCpf(dto.getCpf().replaceAll("[^0-9]", ""));
         usuario.setDataNascimento(dto.getDataNascimento());
 
         return usuarioRepository.save(usuario);
     }
 
-    // Deleta usuário por Id
+    // Deleta usuário por ID
     public void deletarUsuario(Long id) {
         Usuario usuario = buscarUsuarioPorId(id);
         usuarioRepository.delete(usuario);
     }
-
 }

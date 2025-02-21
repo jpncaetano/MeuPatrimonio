@@ -48,6 +48,7 @@ public class UsuarioController {
         return ResponseEntity.created(location).body(novoUsuario);
     }
 
+
     // PUT - Alterar Nome
     @PutMapping("/{id}/nome")
     public ResponseEntity<Usuario> alterarNome(@PathVariable Long id, @RequestBody Map<String, String> body) {
@@ -55,6 +56,15 @@ public class UsuarioController {
         Usuario usuarioAtualizado = usuarioService.alterarNome(id, novoNome);
         return ResponseEntity.ok(usuarioAtualizado);
     }
+
+    // PUT - Alterar CPF
+    @PutMapping("/{id}/cpf")
+    public ResponseEntity<Usuario> alterarCpf(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String novoCpf = body.get("novoCpf");
+        Usuario usuarioAtualizado = usuarioService.alterarCpf(id, novoCpf);
+        return ResponseEntity.ok(usuarioAtualizado);
+    }
+
 
     // PUT - Alterar Data de Nascimento
     @PutMapping("/{id}/dataNascimento")
